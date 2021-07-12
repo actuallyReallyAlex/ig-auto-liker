@@ -1,11 +1,12 @@
 import puppeteer from "puppeteer";
 import {
+  accountList,
   loginButtonSelector,
   notNowNotificationsButtonSelector,
   notNowRememberButtonSelector,
   passwordFieldSelector,
   usernameFieldSelector,
-} from "./selectors";
+} from "./constants";
 
 const main = async () => {
   let browser;
@@ -16,7 +17,7 @@ const main = async () => {
     const password = process.env.PASSWORD;
 
     if (!username || !password) {
-      throw new Error('No username or password set!');
+      throw new Error("No username or password set!");
     }
 
     await page.goto("https://www.instagram.com/", {
@@ -58,6 +59,16 @@ const main = async () => {
     await notNowNotificationsButton.click();
 
     await page.screenshot({ path: "home-page.png", type: "png" });
+
+    for (let i = 0; i < accountList.length; i++) {
+      const account = accountList[i];
+
+      await page.goto(`https://www.instagram.com/${account.username}/`, {
+        waitUntil: "networkidle2",
+      });
+      await page.screenshot({ path: `${account.username}.png`, type: "png" });
+    }
+
     await browser.close();
   } catch (error) {
     browser?.close();
