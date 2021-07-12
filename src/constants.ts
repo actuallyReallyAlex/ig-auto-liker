@@ -1,3 +1,4 @@
+export const likeButtonSelector = 'article > div:nth-child(4) > section:nth-child(1) > span > button > div > span > svg[aria-label="Like"';
 export const loginButtonSelector = 'button[type="submit"]';
 export const notNowRememberButtonSelector =
   "#react-root > section > main > div > div > div > div > button";

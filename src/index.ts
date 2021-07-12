@@ -2,6 +2,7 @@ import { readJSON } from "fs-extra";
 import path from "path";
 import puppeteer from "puppeteer";
 import {
+  likeButtonSelector,
   loginButtonSelector,
   notNowNotificationsButtonSelector,
   notNowRememberButtonSelector,
@@ -15,12 +16,13 @@ import { Settings } from "./types";
 
 const main = async () => {
   let browser;
+  let page;
   try {
     const settings: Settings = await readJSON(
       path.resolve(__dirname, "../settings.json")
     );
     browser = await puppeteer.launch({ headless: false });
-    const page = await browser.newPage();
+    page = await browser.newPage();
     const username = settings.username;
     const password = settings.password;
 
@@ -66,6 +68,8 @@ const main = async () => {
     }
     await notNowNotificationsButton.click();
 
+    const newlyLikedPosts: (string | null)[] = [];
+
     for (let i = 0; i < settings.accounts.length; i++) {
       const account = settings.accounts[i];
       const posts: (string | null)[] = [];
@@ -91,20 +95,37 @@ const main = async () => {
       await page.goto(`https://www.instagram.com${post1}`, {
         waitUntil: "networkidle2",
       });
+      const likeButton1 = await page.$(likeButtonSelector);
+      if (likeButton1) {
+        await likeButton1.click();
+        newlyLikedPosts.push(post1);
+      }
       await page.screenshot({
         path: `${account.username}-post1.png`,
         type: "png",
       });
+
       await page.goto(`https://www.instagram.com${post2}`, {
         waitUntil: "networkidle2",
       });
+      const likeButton2 = await page.$(likeButtonSelector);
+      if (likeButton2) {
+        await likeButton2.click();
+        newlyLikedPosts.push(post2);
+      }
       await page.screenshot({
         path: `${account.username}-post2.png`,
         type: "png",
       });
+
       await page.goto(`https://www.instagram.com${post3}`, {
         waitUntil: "networkidle2",
       });
+      const likeButton3 = await page.$(likeButtonSelector);
+      if (likeButton3) {
+        await likeButton3.click();
+        newlyLikedPosts.push(post3);
+      }
       await page.screenshot({
         path: `${account.username}-post3.png`,
         type: "png",
@@ -112,8 +133,10 @@ const main = async () => {
     }
 
     await browser.close();
+    console.log({ newlyLikedPosts });
   } catch (error) {
     browser?.close();
+    page?.screenshot({ path: 'error.png', type: 'png' })
     console.error(error);
     process.exit(1);
   }
