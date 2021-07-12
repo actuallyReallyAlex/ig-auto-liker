@@ -1,20 +1,25 @@
+import { readJSON } from "fs-extra";
+import path from "path";
 import puppeteer from "puppeteer";
 import {
-  accountList,
   loginButtonSelector,
   notNowNotificationsButtonSelector,
   notNowRememberButtonSelector,
   passwordFieldSelector,
   usernameFieldSelector,
 } from "./constants";
+import { Settings } from "./types";
 
 const main = async () => {
   let browser;
   try {
+    const settings: Settings = await readJSON(
+      path.resolve(__dirname, "../settings.json")
+    );
     browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-    const username = process.env.USERNAME;
-    const password = process.env.PASSWORD;
+    const username = settings.username;
+    const password = settings.password;
 
     if (!username || !password) {
       throw new Error("No username or password set!");
@@ -60,8 +65,8 @@ const main = async () => {
 
     await page.screenshot({ path: "home-page.png", type: "png" });
 
-    for (let i = 0; i < accountList.length; i++) {
-      const account = accountList[i];
+    for (let i = 0; i < settings.accounts.length; i++) {
+      const account = settings.accounts[i];
 
       await page.goto(`https://www.instagram.com/${account.username}/`, {
         waitUntil: "networkidle2",
