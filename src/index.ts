@@ -6,6 +6,9 @@ import {
   notNowNotificationsButtonSelector,
   notNowRememberButtonSelector,
   passwordFieldSelector,
+  post1Selector,
+  post2Selector,
+  post3Selector,
   usernameFieldSelector,
 } from "./constants";
 import { Settings } from "./types";
@@ -63,15 +66,49 @@ const main = async () => {
     }
     await notNowNotificationsButton.click();
 
-    await page.screenshot({ path: "home-page.png", type: "png" });
-
     for (let i = 0; i < settings.accounts.length; i++) {
       const account = settings.accounts[i];
+      const posts: (string | null)[] = [];
 
       await page.goto(`https://www.instagram.com/${account.username}/`, {
         waitUntil: "networkidle2",
       });
-      await page.screenshot({ path: `${account.username}.png`, type: "png" });
+
+      const post1 = await page.$eval(post1Selector, (element) => {
+        return element.getAttribute("href");
+      });
+      const post2 = await page.$eval(post2Selector, (element) => {
+        return element.getAttribute("href");
+      });
+      const post3 = await page.$eval(post3Selector, (element) => {
+        return element.getAttribute("href");
+      });
+
+      posts.push(post1);
+      posts.push(post2);
+      posts.push(post3);
+
+      await page.goto(`https://www.instagram.com${post1}`, {
+        waitUntil: "networkidle2",
+      });
+      await page.screenshot({
+        path: `${account.username}-post1.png`,
+        type: "png",
+      });
+      await page.goto(`https://www.instagram.com${post2}`, {
+        waitUntil: "networkidle2",
+      });
+      await page.screenshot({
+        path: `${account.username}-post2.png`,
+        type: "png",
+      });
+      await page.goto(`https://www.instagram.com${post3}`, {
+        waitUntil: "networkidle2",
+      });
+      await page.screenshot({
+        path: `${account.username}-post3.png`,
+        type: "png",
+      });
     }
 
     await browser.close();
