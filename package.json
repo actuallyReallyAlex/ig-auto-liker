@@ -1,6 +1,6 @@
 {
   "name": "ig-auto-liker",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A script to check the last 3 images for a list of accounts. For any unliked images, like them.",
   "main": "index.js",
   "scripts": {
