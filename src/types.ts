@@ -7,6 +7,12 @@ export interface Change {
   post: string;
 }
 
+export interface InitResponse {
+  accountList: string;
+  password: string;
+  username: string;
+}
+
 export interface Settings {
   accounts: Account[];
   outputDir: string;

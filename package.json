@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rimraf build && tsc",
+    "init": "node build/init.js",
     "start": "node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/alexlee-dev/ig-auto-liker#readme",
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
+    "@types/inquirer": "^7.3.3",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
@@ -29,8 +31,8 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "date-fns": "^2.23.0",
     "fs-extra": "^10.0.0",
+    "inquirer": "^8.1.2",
     "puppeteer": "^10.1.0"
   }
 }
