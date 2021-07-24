@@ -1,6 +1,7 @@
 import { readJSON } from "fs-extra";
 import path from "path";
 import puppeteer from "puppeteer";
+import { maximums } from "./constants";
 import { likePosts, login } from "./steps";
 import { Change, Settings } from "./types";
 
@@ -14,14 +15,23 @@ const main = async () => {
     browser = await puppeteer.launch({ headless: false });
     page = await browser.newPage();
 
+    const counts = {
+      follows: 0,
+      likes: 0,
+    };
+
     await login(settings, page);
 
     const changes: Change[] = [];
 
     for (let i = 0; i < settings.accounts.length; i++) {
       const account = settings.accounts[i];
+      if (counts.likes >= maximums.likes.day) {
+        break;
+      }
 
       await likePosts(page, changes, account);
+      counts.likes += 1;
     }
 
     await browser.close();
