@@ -9,6 +9,7 @@ export interface Change {
 
 export interface Settings {
   accounts: Account[];
+  outputDir: string;
   password: string;
   username: string;
 }

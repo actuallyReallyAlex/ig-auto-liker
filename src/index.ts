@@ -1,4 +1,4 @@
-import { readJSON } from "fs-extra";
+import { ensureDir, readJSON, writeJSON } from "fs-extra";
 import path from "path";
 import puppeteer from "puppeteer";
 import { maximums } from "./constants";
@@ -8,10 +8,17 @@ import { Change, Settings } from "./types";
 const main = async () => {
   let browser;
   let page;
+  const settings: Settings = await readJSON(
+    path.resolve(__dirname, "../settings.json")
+  );
+  // * ensure output dir exists
+  const outputDir = path.resolve(__dirname, "../", settings.outputDir);
+  await ensureDir(outputDir);
+
+  const timestamp = new Date().getTime();
+  let outputPath = path.resolve(outputDir, `./${timestamp}`);
+
   try {
-    const settings: Settings = await readJSON(
-      path.resolve(__dirname, "../settings.json")
-    );
     browser = await puppeteer.launch({ headless: false });
     page = await browser.newPage();
 
@@ -35,11 +42,16 @@ const main = async () => {
     }
 
     await browser.close();
-    console.log(JSON.stringify({ changes }, null, 2));
+    outputPath += "-success.json";
+    const output = { changes };
+    await writeJSON(outputPath, output, { spaces: 2 });
+    console.log(output);
   } catch (error) {
     browser?.close();
     page?.screenshot({ path: "error.png", type: "png" });
     console.error(error);
+    outputPath += "-error.json";
+    await writeJSON(outputPath, error, { spaces: 2 });
     process.exit(1);
   }
 };
