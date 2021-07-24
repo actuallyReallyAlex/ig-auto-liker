@@ -1,4 +1,4 @@
-import { Page } from "puppeteer";
+import { ElementHandle, Page } from "puppeteer";
 import {
   likeButtonSelector,
   loginButtonSelector,
@@ -12,52 +12,95 @@ import {
 } from "./constants";
 import { Account, Change, Settings } from "./types";
 
+const navigateToLoginPage = async (
+  settings: Settings,
+  page: Page
+): Promise<{
+  username: string;
+  password: string;
+  usernameField: ElementHandle<Element>;
+  passwordField: ElementHandle<Element>;
+}> => {
+  const username = settings.username;
+  const password = settings.password;
+
+  if (!username || !password) {
+    throw new Error("No username or password set!");
+  }
+
+  await page.goto("https://www.instagram.com/", {
+    waitUntil: "networkidle2",
+  });
+
+  const usernameField = await page.$(usernameFieldSelector);
+  const passwordField = await page.$(passwordFieldSelector);
+
+  if (!usernameField || !passwordField) {
+    throw new Error("Could not find inputs on login page!");
+  }
+
+  return { username, password, usernameField, passwordField };
+};
+
+const submitLoginForm = async (
+  page: Page,
+  username: string,
+  password: string,
+  usernameField: ElementHandle<Element>,
+  passwordField: ElementHandle<Element>
+): Promise<void> => {
+  await usernameField.type(username);
+  await passwordField.type(password);
+
+  const loginButton = await page.$(loginButtonSelector);
+  if (!loginButton) {
+    throw new Error("Could not find login button on login page!");
+  }
+  await loginButton.click();
+  await page.waitForNavigation();
+};
+
+const disableRememberUser = async (page: Page): Promise<void> => {
+  const notNowRememberButton = await page.$(notNowRememberButtonSelector);
+  if (!notNowRememberButton) {
+    throw new Error("Could not find not now button after login page!");
+  }
+  await notNowRememberButton.click();
+  await page.waitForNavigation();
+};
+
+const disableNotifications = async (page: Page): Promise<void> => {
+  const notNowNotificationsButton = await page.$(
+    notNowNotificationsButtonSelector
+  );
+  if (!notNowNotificationsButton) {
+    throw new Error(
+      "Could not find not now notitfications button on home page!"
+    );
+  }
+  await notNowNotificationsButton.click();
+};
+
 export const login = async (settings: Settings, page: Page): Promise<void> => {
   try {
-    const username = settings.username;
-    const password = settings.password;
+    // * Navigate to Login Form
+    const { username, password, usernameField, passwordField } =
+      await navigateToLoginPage(settings, page);
 
-    if (!username || !password) {
-      throw new Error("No username or password set!");
-    }
-
-    await page.goto("https://www.instagram.com/", {
-      waitUntil: "networkidle2",
-    });
-
-    const usernameField = await page.$(usernameFieldSelector);
-    const passwordField = await page.$(passwordFieldSelector);
-
-    if (!usernameField || !passwordField) {
-      throw new Error("Could not find inputs on login page!");
-    }
-
-    await usernameField.type(username);
-    await passwordField.type(password);
-
-    const loginButton = await page.$(loginButtonSelector);
-    if (!loginButton) {
-      throw new Error("Could not find login button on login page!");
-    }
-    await loginButton.click();
-    await page.waitForNavigation();
-
-    const notNowRememberButton = await page.$(notNowRememberButtonSelector);
-    if (!notNowRememberButton) {
-      throw new Error("Could not find not now button after login page!");
-    }
-    await notNowRememberButton.click();
-    await page.waitForNavigation();
-
-    const notNowNotificationsButton = await page.$(
-      notNowNotificationsButtonSelector
+    // * Submit Login Form
+    await submitLoginForm(
+      page,
+      username,
+      password,
+      usernameField,
+      passwordField
     );
-    if (!notNowNotificationsButton) {
-      throw new Error(
-        "Could not find not now notitfications button on home page!"
-      );
-    }
-    await notNowNotificationsButton.click();
+
+    // * Tell Browser not To Remember Login Info
+    await disableRememberUser(page);
+
+    // * Tell Browser not to Turn on Notifications
+    await disableNotifications(page);
   } catch (error) {
     console.error(error);
   }
